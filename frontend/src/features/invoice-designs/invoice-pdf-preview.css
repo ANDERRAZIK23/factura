@@ -1,0 +1,71 @@
+.invoice-pdf-canvas {
+  display: block;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.invoice-pdf-canvas[hidden] {
+  display: none;
+}
+
+.invoice-page-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: #7a879b;
+  font-size: 10px;
+}
+.invoice-page-navigation button {
+  padding: 4px 8px;
+  min-width: 26px;
+  box-shadow: none;
+  font-size: 11px;
+}
+.invoice-canvas-error {
+  position: absolute;
+  z-index: 1;
+  top: 35%;
+  left: 10%;
+  right: 10%;
+  color: #963e3e;
+  font-size: 12px;
+  background: #fff5f5;
+  padding: 15px;
+  border: 1px solid #f0dddd;
+  border-radius: 6px;
+}
+.invoice-canvas-loading {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  color: #9aa3b3;
+  background: #ffffffdb;
+  font-size: 12px;
+  pointer-events: none;
+}
+
+.invoice-document-preview {
+  padding: 16px;
+}
+.invoice-document-preview-pages {
+  max-height: 75dvh;
+  min-height: 350px;
+  overflow: auto;
+  padding: 5px;
+  margin-bottom: 15px;
+}
+.invoice-document-preview.is-full-page .invoice-document-preview-pages {
+  max-height: none;
+  min-height: 0;
+  overflow: visible;
+}
+.invoice-document-preview-paper {
+  position: relative;
+  width: 100%;
+  background: white;
+  box-shadow: 0 2px 12px #26324710;
+}

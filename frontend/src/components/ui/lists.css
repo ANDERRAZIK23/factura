@@ -1,0 +1,461 @@
+/* Consistent controls and readable records across the business directories. */
+.list-page {
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+}
+.list-page > .page-header,
+.list-page > .list-metrics {
+  margin: 0;
+}
+.list-page > .list-metrics .metric-card {
+  padding: 18px 20px;
+}
+.list-filters {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+  margin: 0;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+}
+.list-filter-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #edf0f5;
+}
+.list-filter-heading > span {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--ink-soft);
+  font-size: var(--text-small);
+  font-weight: 600;
+}
+.list-filter-heading .ui-icon {
+  color: #8793aa;
+}
+.list-filter-heading button {
+  min-height: 28px;
+  padding: 0 4px;
+  font-size: var(--text-caption);
+}
+.list-filter-grid {
+  display: grid;
+  align-items: end;
+  gap: 16px;
+  min-width: 0;
+}
+.client-filter-grid,
+.list-filters .invoice-filter-primary {
+  grid-template-columns: minmax(200px, 2fr) repeat(2, minmax(150px, 1fr));
+}
+.product-filter-grid {
+  grid-template-columns: minmax(200px, 2fr) repeat(3, minmax(120px, 1fr));
+}
+.list-filters label,
+.list-search {
+  display: block;
+  min-width: 0;
+  margin: 0;
+}
+.list-filters label > span,
+.list-filters .search-field > label {
+  display: block;
+  margin: 0 0 7px;
+  color: var(--ink-soft);
+  font-size: var(--text-caption);
+  font-weight: 600;
+}
+.list-filters input,
+.list-filters select {
+  width: 100%;
+  min-width: 0;
+  min-height: 40px;
+  padding: 9px 11px;
+  border: 1px solid #dbe1eb;
+  border-radius: 7px;
+  color: var(--ink-soft);
+  background: #fff;
+  font-size: var(--text-body);
+  line-height: 1.5;
+}
+.list-filters input:focus,
+.list-filters select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+.list-search-input {
+  position: relative;
+}
+.list-search-input > .ui-icon {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  color: #8c98ac;
+  pointer-events: none;
+}
+.list-filters .list-search-input input {
+  padding-left: 36px;
+}
+.list-filter-secondary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  padding-top: 16px;
+  border-top: 1px solid #edf0f5;
+}
+.list-filter-secondary > span {
+  color: var(--muted);
+  font-size: var(--text-caption);
+}
+.list-filter-secondary label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.list-filter-secondary label > span {
+  margin: 0;
+  color: var(--muted);
+  font-weight: 500;
+}
+.list-filter-secondary input {
+  width: 115px;
+  min-height: 34px;
+  padding: 6px 9px;
+}
+.list-filters .invoice-status-shortcuts {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  gap: 6px;
+}
+.list-filters .invoice-status-shortcuts button {
+  min-height: 34px;
+  padding: 7px 13px;
+  font-size: var(--text-body);
+}
+.list-filters .advanced-filters {
+  margin: 0;
+}
+.list-results,
+.company-directory {
+  min-width: 0;
+}
+.list-results .result-summary {
+  padding: 16px 20px;
+}
+.list-results .result-summary strong {
+  font-size: var(--text-small);
+  font-weight: 600;
+}
+:is(.list-results, .company-directory) table {
+  width: 100%;
+}
+:is(.list-results, .company-directory) th {
+  padding: 14px 16px;
+  background: #f8fafc;
+  color: #67758b;
+  font-size: var(--text-caption);
+  font-weight: 650;
+  letter-spacing: 0.04em;
+}
+:is(.list-results, .company-directory) td {
+  padding: 16px;
+  font-size: var(--text-small);
+  line-height: 1.5;
+}
+:is(.list-results, .company-directory) tbody tr:hover {
+  background: #fafbff;
+}
+:is(.list-results, .company-directory) .entity-cell {
+  gap: 12px;
+  min-width: 0;
+}
+:is(.list-results, .company-directory) .entity-cell > :last-child {
+  min-width: 0;
+}
+:is(.list-results, .company-directory) .entity-cell a {
+  font-size: var(--text-small);
+  font-weight: 600;
+}
+.list-cell-copy {
+  display: grid;
+  gap: 3px;
+}
+.list-cell-copy,
+.entity-cell > span:last-child {
+  overflow-wrap: anywhere;
+}
+.list-results .entity-avatar {
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  border-radius: 10px;
+  font-size: var(--text-caption);
+}
+.list-results .numeric-cell {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.list-results .numeric-cell strong {
+  font-size: var(--text-small);
+  font-weight: 650;
+}
+.list-results .row-actions {
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+.list-results .compact-button {
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  min-height: 32px;
+  padding: 0;
+  border-radius: 7px;
+}
+.list-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0;
+  padding: 15px 20px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--muted);
+  background: #fff;
+  font-size: var(--text-caption);
+}
+.list-range {
+  font-variant-numeric: tabular-nums;
+}
+.list-range strong {
+  color: var(--ink-soft);
+  font-weight: 600;
+}
+.list-pagination-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.list-pagination-controls > span {
+  margin-inline: 10px;
+  font-variant-numeric: tabular-nums;
+}
+.list-pagination-controls > label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--text-caption);
+  font-weight: 400;
+}
+.list-pagination-controls select {
+  width: auto;
+  min-height: 32px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  font-size: var(--text-body);
+}
+.list-pagination-controls button {
+  min-height: 32px;
+  padding: 6px 11px;
+  border-radius: 6px;
+  font-size: var(--text-body);
+}
+.company-directory .directory-toolbar {
+  flex-wrap: wrap;
+  gap: 18px;
+  padding: 20px;
+}
+.directory-toolbar .directory-filters {
+  flex-wrap: wrap;
+  align-items: end;
+}
+.directory-filters label {
+  min-width: 0;
+}
+.directory-filters input,
+.directory-filters select {
+  min-height: 40px;
+  border-radius: 7px;
+  font-size: var(--text-body);
+}
+.directory-filters label > span {
+  font-size: var(--text-caption);
+}
+.company-directory .data-table-toolbar {
+  padding: 12px 20px;
+  margin: 0;
+  background: #fafbfe;
+  border-bottom: 1px solid var(--border);
+}
+.company-directory .data-table-toolbar:has(.data-table-actions:empty) {
+  justify-content: flex-end;
+}
+.company-directory .action-menu-item {
+  font-size: var(--text-small);
+}
+.company-directory .action-menu-item input {
+  width: 15px;
+  height: 15px;
+}
+.company-directory .data-table-visibility summary {
+  min-height: 32px;
+  font-size: var(--text-small);
+}
+.company-directory .table-wrap {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+.company-directory .list-pagination {
+  border: 0;
+  border-top: 1px solid var(--border);
+  border-radius: 0;
+}
+.user-directory-filters {
+  display: flex;
+  gap: 12px;
+}
+.user-directory-filters > label:first-child {
+  flex: 1;
+}
+@media (max-width: 1200px) {
+  .product-filter-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .product-filter-grid .list-search {
+    grid-column: 1 / -1;
+  }
+  .client-filter-grid,
+  .list-filters .invoice-filter-primary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .client-filter-grid .list-search,
+  .list-filters .invoice-filter-primary .list-search {
+    grid-column: 1 / -1;
+  }
+}
+@media (min-width: 701px) {
+  .list-results table {
+    min-width: 860px;
+  }
+  .list-results td:first-child {
+    min-width: 230px;
+    max-width: 330px;
+  }
+  .list-results td[data-label="Contact"] {
+    max-width: 240px;
+    overflow-wrap: anywhere;
+  }
+  .company-directory table {
+    min-width: 650px;
+  }
+}
+@media (max-width: 700px) {
+  .list-page {
+    gap: 16px;
+  }
+  .list-filters {
+    padding: 16px;
+    gap: 16px;
+  }
+  .product-filter-grid,
+  .client-filter-grid,
+  .list-filters .invoice-filter-primary {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+  .list-filters input,
+  .list-filters select,
+  .list-pagination select,
+  .directory-filters input,
+  .directory-filters select {
+    font-size: 16px;
+  }
+  .list-filter-secondary {
+    align-items: stretch;
+  }
+  .list-filter-secondary > span {
+    width: 100%;
+  }
+  .list-filter-secondary label {
+    flex: 1;
+    min-width: 120px;
+    display: grid;
+    gap: 6px;
+  }
+  .list-filter-secondary input {
+    width: 100%;
+  }
+  .list-results {
+    overflow: visible;
+  }
+  :is(.list-results, .company-directory) .table-wrap {
+    padding: 12px;
+  }
+  :is(.list-results, .company-directory) td {
+    padding: 12px;
+    overflow-wrap: anywhere;
+  }
+  :is(.list-results, .company-directory) td::before {
+    font-size: var(--text-caption);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  :is(.list-results, .company-directory) td:first-child {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 16px 12px;
+    background: #f8fafc;
+    border-radius: 8px 8px 0 0;
+  }
+  :is(.list-results, .company-directory) td:first-child::before {
+    display: none;
+  }
+  :is(.list-results, .company-directory) td:last-child {
+    border: 0;
+  }
+  .list-results .row-actions {
+    justify-content: flex-start;
+  }
+  .list-results .numeric-cell {
+    white-space: normal;
+  }
+  .list-pagination {
+    padding: 14px;
+  }
+  .list-pagination-controls {
+    width: 100%;
+  }
+  .list-pagination-controls > label {
+    margin-right: auto;
+  }
+  .list-pagination-controls > span {
+    margin-inline: 0;
+  }
+  .directory-toolbar .directory-filters {
+    width: 100%;
+  }
+  .user-directory-filters {
+    flex-direction: column;
+  }
+}
+
+.list-filters .invoice-filter-primary {
+  padding: 0;
+}

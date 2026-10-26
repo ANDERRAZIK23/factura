@@ -1,0 +1,60 @@
+spring:
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
+  application:
+    name: invoice-management
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/invoice_management}
+    username: ${DATABASE_USERNAME:invoice_app}
+    password: ${DATABASE_PASSWORD}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  flyway:
+    enabled: true
+  mvc:
+    problemdetails:
+      enabled: true
+server:
+  error:
+    include-message: never
+    include-stacktrace: never
+app:
+  security:
+    jwt-secret: ${JWT_SECRET}
+    issuer: ${JWT_ISSUER:invoice-management}
+    audience: ${JWT_AUDIENCE:invoice-management-web}
+    access-expiration: ${JWT_ACCESS_EXPIRATION:15m}
+    refresh-expiration: ${JWT_REFRESH_EXPIRATION:30d}
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://127.0.0.1:5173}
+    cookie-secure: ${AUTH_COOKIE_SECURE:false}
+    initial-admin-name: ${INITIAL_ADMIN_NAME:}
+    initial-admin-email: ${INITIAL_ADMIN_EMAIL:}
+    initial-admin-password: ${INITIAL_ADMIN_PASSWORD:}
+  invoice:
+    storage:
+      path: ${INVOICE_PDF_STORAGE_PATH:./storage/invoices}
+  contracts:
+    expiration-job:
+      enabled: ${CONTRACT_EXPIRATION_JOB_ENABLED:true}
+      cron: ${CONTRACT_EXPIRATION_JOB_CRON:0 0 1 * * *}
+  invoices:
+    recurring-job:
+      enabled: ${RECURRING_INVOICE_JOB_ENABLED:true}
+      cron: ${RECURRING_INVOICE_JOB_CRON:0 10 * * * *}
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never

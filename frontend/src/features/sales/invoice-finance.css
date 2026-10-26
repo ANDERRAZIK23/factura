@@ -1,0 +1,139 @@
+.invoice-finance .finance-heading {
+  margin-bottom: 4px;
+}
+.finance-eyebrow {
+  display: block;
+  margin-bottom: 6px;
+  color: #707b90;
+  font-size: var(--text-caption);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.invoice-finance .sales-totals {
+  margin: 0;
+  padding: 16px;
+  border: 1px solid #e8eaf2;
+  border-radius: 10px;
+  background: #fafbfe;
+}
+.invoice-finance .sales-totals > div {
+  padding: 5px 0;
+  font-size: var(--text-small);
+}
+.invoice-finance .sales-totals dt {
+  color: #69768b;
+}
+.invoice-finance .sales-totals .finance-balance {
+  margin-top: 9px;
+  padding-top: 14px;
+  border-top: 1px solid #e4e7f0;
+  align-items: center;
+}
+.invoice-finance .finance-balance dt {
+  color: #323b55;
+  font-weight: 600;
+}
+.invoice-finance .finance-balance dd {
+  color: #5a46c9;
+  font-size: 19px;
+  letter-spacing: -0.04em;
+}
+.finance-due {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px 8px;
+  color: #687489;
+  font-size: var(--text-small);
+}
+.finance-due strong {
+  margin-left: auto;
+  color: #3c465c;
+  font-size: var(--text-small);
+}
+.finance-due.is-overdue strong {
+  color: #aa5420;
+}
+.finance-overdue {
+  padding: 3px 6px;
+  border-radius: 4px;
+  background: #fff2e7;
+  color: #a4501c;
+  font-size: var(--text-caption);
+  font-weight: 600;
+}
+.invoice-finance > .sales-actions > button,
+.invoice-finance > .sales-actions > a {
+  width: 100%;
+  justify-content: center;
+}
+.invoice-finance form {
+  padding: 14px;
+  border: 1px solid #e6e9f3;
+  border-radius: 10px;
+  background: #fafbfe;
+}
+.finance-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 9px;
+  padding-top: 18px;
+  border-top: 1px solid #edf0f6;
+}
+.finance-section-heading h3 {
+  margin: 0;
+  font-size: var(--text-small);
+  color: #35405a;
+}
+.finance-count {
+  padding: 2px 7px;
+  border-radius: 5px;
+  background: #f0f1f7;
+  color: #737d92;
+  font-size: var(--text-caption);
+  font-variant-numeric: tabular-nums;
+}
+.invoice-finance .sales-payment {
+  margin: 0;
+  padding: 14px 0;
+}
+.finance-payment-heading {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+}
+.finance-payment-heading strong {
+  color: #35405a;
+  font-size: var(--text-small);
+  font-variant-numeric: tabular-nums;
+}
+.finance-payment-heading span {
+  color: #477766;
+  font-size: var(--text-caption);
+}
+.is-reversed .finance-payment-heading span {
+  color: #8c6d5a;
+}
+.finance-payment-meta,
+.finance-reference {
+  margin: 6px 0;
+  color: #798499;
+  font-size: var(--text-caption);
+  overflow-wrap: anywhere;
+}
+.invoice-finance .sales-payment > button {
+  padding: 5px 0;
+  background: transparent;
+  color: #69758d;
+  border-color: transparent;
+  font-size: var(--text-caption);
+}
+.invoice-finance input:disabled,
+.invoice-finance select:disabled {
+  opacity: 0.65;
+}
