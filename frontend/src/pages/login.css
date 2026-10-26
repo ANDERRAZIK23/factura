@@ -30,35 +30,17 @@
 
 .auth-brand {
   display: flex;
-  gap: 0.8rem;
-  align-items: center;
+  flex-direction: column;
+  gap: 0.4rem;
+  align-items: flex-start;
 }
 
-.auth-brand-mark {
-  display: grid;
-  width: 44px;
-  height: 44px;
-  flex-shrink: 0;
-  place-items: center;
-  border: 1px solid #6564e8;
-  border-radius: 12px;
-  background: #4f46e5;
+.auth-brand .factura-logo {
+  width: min(13.75rem, 100%);
+  filter: brightness(0) invert(1);
 }
 
-.auth-brand strong,
-.auth-brand div > span {
-  display: block;
-}
-
-.auth-brand strong {
-  font-size: 1.35rem;
-  font-weight: 700;
-  letter-spacing: -0.04em;
-  line-height: 1.25;
-}
-
-.auth-brand div > span {
-  margin-top: 0.15rem;
+.auth-brand > span {
   color: #b3bfd2;
   font-size: var(--text-caption);
   letter-spacing: 0.035em;

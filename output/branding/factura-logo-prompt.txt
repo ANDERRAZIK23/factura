@@ -1,0 +1,10 @@
+Generated using the built-in image_gen tool.
+
+Use case: logo-brand.
+Asset type: finished primary logo for Factura, an existing professional invoicing and business management web application.
+Create one refined, original, memorable horizontal brand logo on a truly transparent background. The composition is a compact distinctive symbol on the left, with the word "Factura" on the right, vertically balanced and beautifully kerned. Use the exact spelling F-a-c-t-u-r-a, capital F and lowercase remaining letters, with no other text.
+Symbol: a confident geometric F monogram subtly suggesting the folded corner of an invoice sheet, built from very few clean substantial shapes and considered negative space. The icon must have a strong silhouette and remain legible at small sidebar and app-icon sizes. Avoid stock clipart, currency signs, coins, calculators, growth arrows and overly literal receipt illustrations.
+Typography: polished medium-bold geometric humanist sans serif in the spirit of the application's Manrope typeface, friendly, precise, with open counters. Not italic.
+Palette taken from the actual application: solid indigo #4f46e5 for the symbol and deep navy #0f172a for the wordmark. A secondary indigo #3730a3 may be used sparingly only if structurally useful. Flat color, crisp vector-like edges, no gradients, no shadows, no texture, no 3D.
+Framing: one single complete logo lockup, centered, on a wide canvas, generous even transparent clearance around the artwork, optimized for reuse on the app's white surfaces.
+Constraints: no slogan, no mockup, no stationery, no scene, no brand board, no multiple alternatives, no frame, no watermark. Transparency must be actual alpha, not a checkerboard drawing.

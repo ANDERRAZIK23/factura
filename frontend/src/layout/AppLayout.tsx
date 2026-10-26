@@ -17,6 +17,7 @@ import {
 } from "../features/companies/hooks/useCompanies";
 import { formatRole } from "../utils/format";
 import { Icon, type IconName } from "../components/ui/Icon";
+import { FacturaLogo } from "../components/ui/FacturaLogo";
 
 type NavigationLink = {
   label: string;
@@ -154,9 +155,6 @@ export function AppLayout() {
     company.data?.companyName.charAt(0).toUpperCase() || "C";
   const platformArea = user?.role === "APP_ADMIN";
   const companyLogo = platformArea ? null : branding.data?.logoDataUrl;
-  const brandName = platformArea
-    ? "Facture"
-    : (company.data?.companyName ?? "Espace entreprise");
   const page = pageContext(location.pathname);
   const visibleNavigation = navigation
     .map((section) => ({
@@ -271,20 +269,10 @@ export function AppLayout() {
             <Link
               className="brand"
               to="/dashboard"
-              aria-label={`Tableau de bord ${brandName}`}
-              title={brandName}
+              aria-label="Tableau de bord Factura"
+              title="Factura"
             >
-              <CompanyMark
-                className="brand-mark"
-                logo={companyLogo}
-                fallback={platformArea ? "F" : companyInitial}
-              />
-              <span className="brand-copy">
-                <strong>{brandName}</strong>
-                <small>
-                  {platformArea ? "Administration" : "Espace entreprise"}
-                </small>
-              </span>
+              <FacturaLogo iconOnly={collapsed && !isMobile} />
             </Link>
 
             <button
@@ -378,6 +366,13 @@ export function AppLayout() {
             >
               <Icon name="columns" size={18} />
             </button>
+            <Link
+              className="topbar-brand"
+              to="/dashboard"
+              aria-label="Accueil Factura"
+            >
+              <FacturaLogo />
+            </Link>
             <div className="topbar-page-context">
               <small>{page.area}</small>
               <span aria-hidden="true">/</span>

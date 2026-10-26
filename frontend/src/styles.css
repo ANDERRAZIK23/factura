@@ -543,6 +543,17 @@
     color: var(--ink);
     text-decoration: none;
   }
+  .factura-logo {
+    display: block;
+    width: 9rem;
+    max-width: 100%;
+    height: auto;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+  .factura-logo-icon {
+    width: 36px;
+  }
   .brand-mark {
     display: grid;
     width: 36px;
@@ -788,6 +799,10 @@
     grid-auto-flow: column;
     align-items: center;
     gap: 0.65rem;
+  }
+  .topbar-brand {
+    display: none;
+    flex-shrink: 0;
   }
   .topbar-page-context small {
     color: var(--muted);
@@ -3909,6 +3924,10 @@
   }
 
   @media (max-width: 1280px) {
+    .topbar-page-context small,
+    .topbar-page-context > span {
+      display: none;
+    }
     .topbar .workspace-context {
       display: none;
     }
@@ -3919,6 +3938,9 @@
   @media (max-width: 820px) {
     .desktop-menu-button {
       display: none;
+    }
+    .topbar-brand {
+      display: block;
     }
     .sidebar-mobile-close {
       display: inline-flex;
@@ -3957,6 +3979,10 @@
     }
     .topbar-page-context {
       flex: 1;
+      overflow: hidden;
+    }
+    .topbar-brand .factura-logo {
+      width: 6.5rem;
     }
     .topbar-page-context strong {
       overflow: hidden;

@@ -1,6 +1,6 @@
 import { HttpResponse, delay, http } from "msw";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it } from "vitest";
@@ -422,7 +422,7 @@ describe("authentication UI", () => {
     ).toBeVisible();
   });
 
-  it("uses the authenticated company name and logo as the application brand", async () => {
+  it("shows Factura as the app brand and keeps company branding in the workspace context", async () => {
     restored();
     server.use(
       http.get(`${base}/company/branding`, () =>
@@ -434,13 +434,18 @@ describe("authentication UI", () => {
       ),
     );
     const view = renderApp("/dashboard");
-    expect(
-      await screen.findByRole("link", { name: "Tableau de bord Atlas SARL" }),
-    ).toBeVisible();
-    expect(view.container.querySelector(".brand-mark img")).toHaveAttribute(
-      "src",
-      "data:image/png;base64,iVBORw0KGgo=",
-    );
+    const brand = await screen.findByRole("link", {
+      name: "Tableau de bord Factura",
+    });
+    expect(within(brand).getByRole("img", { name: "Factura" })).toBeVisible();
+    await waitFor(() => {
+      expect(
+        view.container.querySelector(".sidebar-context strong"),
+      ).toHaveTextContent("Atlas SARL");
+      expect(
+        view.container.querySelector(".sidebar-context-mark img"),
+      ).toHaveAttribute("src", "data:image/png;base64,iVBORw0KGgo=");
+    });
   });
 
   it("lets APP_ADMIN manage users inside the selected company workspace", async () => {

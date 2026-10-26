@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { useAuth } from "../auth/useAuth";
+import { FacturaLogo } from "../components/ui/FacturaLogo";
 import { Icon } from "../components/ui/Icon";
 import "./login.css";
 
@@ -50,13 +51,8 @@ export function LoginPage() {
       <div className="auth-shell">
         <aside className="auth-intro" aria-labelledby="auth-intro-title">
           <div className="auth-brand">
-            <span className="auth-brand-mark" aria-hidden="true">
-              <Icon name="invoice" size={24} />
-            </span>
-            <div>
-              <strong>Facture</strong>
-              <span>Gestion d’entreprise</span>
-            </div>
+            <FacturaLogo />
+            <span>Gestion d’entreprise</span>
           </div>
           <div className="auth-intro-content">
             <p className="auth-kicker">Votre activité, en toute clarté</p>
@@ -199,7 +195,7 @@ export function LoginPage() {
             </p>
           </div>
           <p className="auth-access-footer">
-            Facture <span aria-hidden="true">·</span> Gestion de facturation
+            Factura <span aria-hidden="true">·</span> Gestion de facturation
           </p>
         </section>
       </div>
