@@ -3,6 +3,7 @@ set -Eeuo pipefail
 
 root_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 compose_file="$root_dir/docker-compose.yml"
+dev_compose_file="$root_dir/docker-compose.dev.yml"
 backend_pid=""
 
 export COMPOSE_PROJECT_NAME=invoice-management-tests
@@ -17,7 +18,7 @@ cleanup() {
     kill "$backend_pid"
     wait "$backend_pid" 2>/dev/null || true
   fi
-  docker compose -f "$compose_file" down --volumes --remove-orphans
+  docker compose -f "$compose_file" -f "$dev_compose_file" down --volumes --remove-orphans
 }
 trap cleanup EXIT INT TERM
 
@@ -39,7 +40,7 @@ export INITIAL_ADMIN_EMAIL
 export INITIAL_ADMIN_PASSWORD
 : "${INVOICE_PDF_STORAGE_PATH:=$root_dir/backend/target/e2e-invoice-pdfs}"
 export INVOICE_PDF_STORAGE_PATH
-docker compose -f "$compose_file" up -d --wait postgres
+docker compose -f "$compose_file" -f "$dev_compose_file" up -d --wait postgres
 
 (cd "$root_dir/backend" && ./mvnw clean verify)
 (cd "$root_dir/frontend" && npm ci && npm run lint && npm run typecheck && npm run test:run && npm run test:coverage && npm run build)

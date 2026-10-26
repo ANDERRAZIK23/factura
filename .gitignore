@@ -17,5 +17,6 @@ frontend/test-results/
 .postgres-data/
 postgres-data/
 tmp/
+backups/
 storage/invoices/**
 !storage/invoices/.gitkeep

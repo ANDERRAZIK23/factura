@@ -16,6 +16,17 @@ docker compose ps
 curl --fail http://127.0.0.1:${FRONTEND_PORT:-5173}/
 ```
 
+PostgreSQL is intentionally not published to the host by the production Compose
+file. For local development, use the development override:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --wait postgres
+```
+
+The backend exposes readiness, liveness, and Prometheus metrics on its private
+network. Keep those endpoints behind the internal network or an authenticated
+monitoring path; do not publish the backend port publicly.
+
 The frontend health check covers Nginx and the static application. Backend and PostgreSQL have separate internal health checks. Inspect startup or runtime failures with `docker compose logs --tail=200 backend` and the equivalent service name for `frontend` or `postgres`.
 
 ## Upgrade
@@ -33,25 +44,25 @@ Flyway runs automatically before the API accepts traffic. Never edit an already-
 Choose a maintenance window that prevents invoice validation while the two data stores are captured.
 
 ```bash
-mkdir -p backups
-docker compose exec -T postgres pg_dump -U "${POSTGRES_USER:-invoice_app}" -d "${POSTGRES_DB:-invoice_management}" -Fc > backups/invoices.dump
-docker run --rm -v facture_invoice-pdf-data:/source:ro -v "$PWD/backups:/backup" alpine:3.22 tar -C /source -czf /backup/invoice-pdfs.tgz .
+./scripts/backup.sh
 ```
 
-The actual volume prefix follows the Compose project name; confirm it with `docker volume ls` before running the PDF command. Encrypt backups, restrict access, copy them off-host, define retention, and regularly test restoration.
+The script creates a timestamped directory under `backups/` containing both the
+PostgreSQL dump and the invoice PDF archive. Encrypt backups, restrict access,
+copy them off-host, define retention, and regularly test restoration.
 
 ## Restore
 
 Restore into an empty, isolated environment first. Stop the frontend and backend, restore PostgreSQL, then restore the matching PDF archive before restarting the services.
 
 ```bash
-docker compose stop frontend backend
-docker compose exec -T postgres pg_restore --clean --if-exists --no-owner -U "${POSTGRES_USER:-invoice_app}" -d "${POSTGRES_DB:-invoice_management}" < backups/invoices.dump
-docker run --rm -v facture_invoice-pdf-data:/target -v "$PWD/backups:/backup:ro" alpine:3.22 sh -c 'cd /target && tar -xzf /backup/invoice-pdfs.tgz'
-docker compose up -d --wait
+./scripts/restore.sh backups/20261026T120000Z
 ```
 
-After restoration, verify invoice counts, the latest invoice number, and PDF downloads for recent and older invoices.
+The restore script requires typing `RESTORE` and should only be used in an
+isolated environment or an approved maintenance window. After restoration,
+verify invoice counts, the latest invoice number, and PDF downloads for recent
+and older invoices.
 
 ## Rollback and incidents
 
@@ -62,6 +73,7 @@ On suspected credential exposure, rotate the database and JWT secrets, restart t
 ## Routine maintenance
 
 - Monitor container restarts, health status, authentication failures, HTTP 5xx rates, PostgreSQL capacity, and PDF-volume capacity.
+- Authentication endpoints are throttled by Nginx at 10 requests per minute per client address, with a burst of 5. Tune this at the trusted ingress for multi-instance deployments.
 - Back up PostgreSQL and PDFs together and test recovery on a schedule.
 - Remove expired/revoked refresh-token records according to an approved retention policy.
 - Review dependency advisories and rebuild images regularly, including base-image security updates.

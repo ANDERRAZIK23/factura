@@ -32,7 +32,7 @@ Required runtime values include the PostgreSQL password, a high-entropy JWT sign
 ## Development
 
 ```bash
-docker compose up -d --wait postgres
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --wait postgres
 set -a && source .env && set +a
 cd backend && ./mvnw -Dspring-boot.run.profiles=dev spring-boot:run
 cd frontend && npm ci && npm run dev
