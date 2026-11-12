@@ -29,6 +29,14 @@ monitoring path; do not publish the backend port publicly.
 
 The frontend health check covers Nginx and the static application. Backend and PostgreSQL have separate internal health checks. Inspect startup or runtime failures with `docker compose logs --tail=200 backend` and the equivalent service name for `frontend` or `postgres`.
 
+## Deploy services separately
+
+Use `backend/` and `frontend/` as their respective Docker build contexts. Both containers listen on port `8080`. Use `/actuator/health` for the backend health check and `/` for the frontend.
+
+For the backend, set `SPRING_PROFILES_ACTIVE=prod`, `DATABASE_URL` (in `jdbc:postgresql://<host>:<port>/<database>` format), `DATABASE_USERNAME`, `DATABASE_PASSWORD`, `JWT_SECRET`, and all three `INITIAL_ADMIN_*` variables from [.env.example](../.env.example). The database host must be reachable from the backend container. For persistent PDF storage, set `INVOICE_PDF_STORAGE_PATH` to a mounted directory writable by the container user.
+
+For the frontend, set the runtime variable `BACKEND_UPSTREAM` to the backend's internal hostname and service port, with no scheme or path. In Kubernetes, use the Service's fully qualified DNS name, such as `backend.example-namespace.svc.cluster.local:8080` for a Service named `backend` in `example-namespace` on a cluster using `cluster.local`. Docker Compose uses the image default `backend:8080`. Nginx renders its upstream configuration into `/tmp`, which must be writable. The frontend health check can pass while the backend is unavailable. Verify API routing separately, for example by signing in after both services are healthy.
+
 ## Upgrade
 
 1. Create a coordinated database/PDF backup.

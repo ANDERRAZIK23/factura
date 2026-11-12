@@ -8,8 +8,13 @@ ENV VITE_API_URL=$VITE_API_URL
 RUN npm run build
 
 FROM nginxinc/nginx-unprivileged:1.29-alpine
+ENV BACKEND_UPSTREAM=backend:8080 \
+    NGINX_ENTRYPOINT_LOCAL_RESOLVERS=1 \
+    NGINX_ENVSUBST_OUTPUT_DIR=/tmp \
+    NGINX_ENVSUBST_FILTER="^(BACKEND_UPSTREAM|NGINX_LOCAL_RESOLVERS)$"
 COPY --from=build /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY backend-upstream.conf.template /etc/nginx/templates/backend-upstream.conf.template
 COPY security-headers.conf /etc/nginx/security-headers.conf
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
