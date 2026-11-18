@@ -8,6 +8,7 @@ import ma.facture.invoicing.user.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -48,8 +49,10 @@ class AuthenticationIT {
         viewer = users.save(new UserEntity("Viewer","viewer@example.com",encoder.encode(PASSWORD),UserRole.VIEWER));
     }
 
-    @Test void healthIsPublicAndDoesNotExposeDetails() throws Exception {
-        mvc.perform(get("/actuator/health")).andExpect(status().isOk()).andExpect(jsonPath("$.status").value("UP")).andExpect(jsonPath("$.components").doesNotExist());
+    @ParameterizedTest
+    @ValueSource(strings = {"/actuator/health", "/actuator/health/liveness", "/actuator/health/readiness"})
+    void healthIsPublicAndDoesNotExposeDetails(String path) throws Exception {
+        mvc.perform(get(path)).andExpect(status().isOk()).andExpect(jsonPath("$.status").value("UP")).andExpect(jsonPath("$.components").doesNotExist());
     }
     @Test void missingTokenReturnsProblem401() throws Exception {
         mvc.perform(get("/api/v1/auth/me")).andExpect(status().isUnauthorized()).andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));

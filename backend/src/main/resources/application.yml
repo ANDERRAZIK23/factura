@@ -21,6 +21,7 @@ spring:
     problemdetails:
       enabled: true
 server:
+  port: ${PORT:8080}
   error:
     include-message: never
     include-stacktrace: never
@@ -60,6 +61,9 @@ management:
       show-details: never
       probes:
         enabled: true
+      group:
+        readiness:
+          include: readinessState,db
     prometheus:
       access: unrestricted
   metrics:
