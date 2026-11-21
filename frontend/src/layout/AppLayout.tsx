@@ -117,12 +117,6 @@ const navigation: { label: string; links: NavigationLink[] }[] = [
         icon: "companies",
       },
       {
-        label: "Design des contrats",
-        path: "/contract-designer",
-        roles: ["APP_ADMIN"],
-        icon: "edit",
-      },
-      {
         label: "Design des factures",
         path: "/invoice-designer",
         roles: ["APP_ADMIN"],
@@ -493,7 +487,6 @@ function pageContext(pathname: string) {
       area: "Plateforme",
       title: pathname.endsWith("/new") ? "Nouvelle entreprise" : "Entreprises",
     },
-    "contract-designer": { area: "Plateforme", title: "Design des contrats" },
   };
   return contexts[segment] ?? { area: "Application", title: "Facture" };
 }

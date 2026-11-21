@@ -246,9 +246,13 @@ describe("authentication UI", () => {
     expect(screen.getByRole("link", { name: "Factures" })).toBeVisible();
   });
 
-  it("does not expose the removed contracts workspace", async () => {
-    restored();
-    renderApp("/contracts");
+  it.each([
+    "/contracts",
+    "/contract-designer",
+    "/contract-designer?companyId=company-1",
+  ])("does not expose the removed contracts workspace at %s", async (path) => {
+    restored("APP_ADMIN");
+    renderApp(path);
     expect(
       await screen.findByRole("heading", { name: "Page introuvable" }),
     ).toBeVisible();
@@ -307,6 +311,12 @@ describe("authentication UI", () => {
       await screen.findByRole("heading", { name: "Entreprises" }),
     ).toBeVisible();
     expect(screen.getByRole("link", { name: "Entreprises" })).toBeVisible();
+    expect(
+      screen.getByRole("link", { name: "Design des factures" }),
+    ).toBeVisible();
+    expect(
+      screen.queryByRole("link", { name: /contrat/i }),
+    ).not.toBeInTheDocument();
     expect(await screen.findByText("Atlas SARL")).toBeVisible();
     expect(
       screen.getByRole("button", { name: "Entreprise actuelle" }),

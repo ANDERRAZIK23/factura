@@ -1,4 +1,3 @@
-import { lazy, Suspense } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthContext";
 import { ProtectedRoute } from "./auth/ProtectedRoute";
@@ -38,10 +37,6 @@ import {
 import { CollectionsPage } from "./features/sales/CollectionsPage";
 import { ClientPortalPage } from "./features/portal/ClientPortalPage";
 
-const ContractDesignerPage = lazy(
-  () => import("./features/contract-designs/ContractDesignerPage"),
-);
-
 export function App() {
   return (
     <Routes>
@@ -64,22 +59,6 @@ function StaffApp() {
             </ProtectedRoute>
           }
         >
-          <Route
-            path="/contract-designer"
-            element={
-              <RoleProtectedRoute roles={["APP_ADMIN"]}>
-                <Suspense
-                  fallback={
-                    <div className="loading-state" role="status">
-                      Chargement du designer de contrats…
-                    </div>
-                  }
-                >
-                  <ContractDesignerPage />
-                </Suspense>
-              </RoleProtectedRoute>
-            }
-          />
           <Route
             path="/invoice-designer"
             element={
