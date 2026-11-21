@@ -42,8 +42,7 @@
   font-size: 12px;
   line-height: 1.6;
 }
-.editor-section-icon,
-.editor-step {
+.editor-section-icon {
   display: grid;
   place-items: center;
   flex: 0 0 38px;
@@ -287,18 +286,6 @@
   white-space: nowrap;
   border-radius: 7px;
 }
-.invoice-client-placeholder {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-top: 18px;
-  padding: 20px;
-  border: 1px dashed #dae0ed;
-  border-radius: 8px;
-  color: var(--muted);
-  background: #fafbfe;
-  font-size: 12px;
-}
 .invoice-editor .invoice-create-client-details {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -381,38 +368,22 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 238px;
-  padding: 28px 20px;
+  gap: 12px;
+  min-height: 132px;
+  padding: 20px;
   border: 1px dashed #d7dfec;
   border-radius: 9px;
   background: #fafbfe;
   text-align: center;
-}
-.invoice-empty-icon {
-  display: grid;
-  place-items: center;
-  width: 48px;
-  height: 48px;
-  margin-bottom: 14px;
-  border: 1px solid #e0e5f3;
-  border-radius: 12px;
-  background: #fff;
-  color: #777fba;
 }
 .invoice-lines-empty h3 {
   margin: 0;
   font-size: 14px;
   font-weight: 600;
 }
-.invoice-lines-empty p {
-  max-width: 360px;
-  margin: 8px 0 20px;
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.65;
-}
-.invoice-lines-empty button {
-  font-size: 12px;
+.invoice-submit-note {
+  flex: 1 1 230px;
+  margin: 0;
 }
 .invoice-editor .invoice-create-lines-table {
   border-color: #e5e9f1;
@@ -494,14 +465,15 @@
   border-bottom: 1px solid #edf0f5;
 }
 .editor-summary-header h2 {
-  margin-top: 6px;
+  margin: 0;
+  padding-right: 44px;
   font-size: 18px;
   font-weight: 650;
   letter-spacing: -0.03em;
 }
 .editor-summary-currency {
   position: absolute;
-  top: 27px;
+  top: 24px;
   right: 22px;
   padding: 3px 7px;
   border: 1px solid var(--border);

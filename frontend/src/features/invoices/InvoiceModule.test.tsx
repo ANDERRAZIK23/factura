@@ -516,14 +516,25 @@ describe("invoice form", () => {
     );
     await user.click(picker);
     expect(picker).toHaveAttribute("aria-expanded", "true");
+    await user.type(picker, "Autre article");
     await user.keyboard("{Escape}");
     expect(picker).toHaveValue("PRD-000102 — Service Premium");
+    expect(screen.getByLabelText("Prix unitaire 1")).toHaveValue(275);
     const quantity = screen.getByRole<HTMLInputElement>("spinbutton", {
       name: "Quantité 1",
     });
     quantity.stepUp();
     fireEvent.input(quantity);
     expect(quantity).toHaveValue(1.001);
+    const price = screen.getByLabelText("Prix unitaire 1");
+    await user.clear(price);
+    await user.type(price, "250");
+    await user.click(picker);
+    await user.type(picker, "Premium");
+    await user.click(
+      await screen.findByRole("option", { name: /Service Premium/ }),
+    );
+    expect(price).toHaveValue(250);
   });
 
   it("validates required fields and line boundaries", async () => {
@@ -541,7 +552,7 @@ describe("invoice form", () => {
     expect(screen.getByText("Le client est requis")).toBeVisible();
     expect(screen.getByText("Le produit est requis")).toBeVisible();
     expect(
-      screen.getByText("La quantité doit être supérieur à zéro"),
+      screen.getByText("La quantité doit être supérieure à zéro"),
     ).toBeVisible();
   });
   it("adds/removes a catalogue line and applies one global VAT rate", async () => {
@@ -668,6 +679,94 @@ describe("invoice form", () => {
     await second.click(screen.getByTestId("invoice-submit"));
     expect(await screen.findByText("Server rejected date")).toBeVisible();
   });
+
+  it("uses the selected product tax rates and rounds each discounted line", async () => {
+    const reduced = {
+      ...product,
+      id: "77777777-7777-4777-8777-777777777777",
+      productName: "Papier",
+      unitPriceExcludingTax: 10.7,
+      defaultVatRate: 10,
+    };
+    let savedInput: unknown;
+    renderApp("/invoices/new", "ADMIN", [
+      http.get(`${base}/products`, () =>
+        HttpResponse.json({
+          ...products,
+          content: [product, reduced],
+          totalElements: 2,
+        }),
+      ),
+      http.post(`${base}/invoices`, async ({ request }) => {
+        savedInput = await request.json();
+        return HttpResponse.json(invoice, { status: 201 });
+      }),
+    ]);
+    const user = userEvent.setup();
+    await waitFor(() =>
+      expect(screen.getByLabelText("Client *")).toContainHTML(client.id),
+    );
+    await user.selectOptions(screen.getByLabelText("Client *"), client.id);
+    await user.click(screen.getByTestId("add-invoice-line"));
+    await user.click(await screen.findByRole("option", { name: /Blue Roll/ }));
+    await user.click(screen.getByTestId("add-invoice-line"));
+    await user.click(await screen.findByRole("option", { name: /Papier/ }));
+    const quantity = screen.getByLabelText("Quantité 2");
+    await user.clear(quantity);
+    await user.type(quantity, "0.25");
+    // 10.70 × 0.25 rounds to 2.68 HT, then 10% rounds to 0.27 TVA.
+    expect(screen.getByTestId("invoice-preview-total")).toHaveTextContent(
+      "122,95 MAD",
+    );
+    await user.click(screen.getByTestId("invoice-submit"));
+    await waitFor(() =>
+      expect(savedInput).toMatchObject({
+        lines: [
+          { productId: product.id, vatRate: 20 },
+          { productId: reduced.id, vatRate: 10, quantity: 0.25 },
+        ],
+      }),
+    );
+  });
+
+  it("preserves stored mixed tax rates when reopening and saving a draft", async () => {
+    let savedRates: number[] = [];
+    renderApp(`/invoices/${invoice.id}/edit`, "ADMIN", [
+      http.get(`${base}/invoices/:id`, () =>
+        HttpResponse.json({
+          ...invoice,
+          lines: [
+            line,
+            {
+              ...line,
+              id: "second-line",
+              productId: "alternate-product",
+              vatRate: 7,
+            },
+          ],
+        }),
+      ),
+      http.put(`${base}/invoices/:id`, async ({ request }) => {
+        const data = (await request.json()) as { lines: { vatRate: number }[] };
+        savedRates = data.lines.map(({ vatRate }) => vatRate);
+        return HttpResponse.json(invoice);
+      }),
+    ]);
+    const user = userEvent.setup();
+    const vat = await screen.findByLabelText("Taux de TVA *");
+    expect(vat).toHaveValue("line");
+    expect(screen.getByTestId("invoice-preview-total")).toHaveTextContent(
+      "408,60 MAD",
+    );
+    await user.selectOptions(vat, "14.00");
+    expect(screen.getByTestId("invoice-preview-total")).toHaveTextContent(
+      "410,40 MAD",
+    );
+    await user.selectOptions(vat, "line");
+    await user.click(screen.getByTestId("invoice-submit"));
+    await waitFor(() => expect(savedRates).toEqual([20, 7]));
+  });
+
   it("loads an editable draft and recovers explicitly from an optimistic-lock conflict", async () => {
     let gets = 0;
     renderApp(`/invoices/${invoice.id}/edit`, "ADMIN", [

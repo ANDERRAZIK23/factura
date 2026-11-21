@@ -24,6 +24,8 @@ import {
 } from "../types/invoice";
 import {
   calculateInvoiceCreatePreview,
+  effectiveVatRate,
+  LINE_VAT_RATE,
   type InvoiceCreateLinePreview,
 } from "../utils/invoiceCreatePreview";
 import {
@@ -53,11 +55,14 @@ const emptyValues: InvoiceCreateFormValues = {
   clientId: "",
   paymentMethod: "CASH",
   customerOrderReference: "",
-  vatRate: "20.00",
+  vatRate: LINE_VAT_RATE,
   lines: [],
 };
 
 function valuesFor(invoice: Invoice): InvoiceCreateFormValues {
+  const rates = [
+    ...new Set(invoice.lines.map((line) => line.vatRate.toFixed(2))),
+  ];
   return {
     invoiceDate: invoice.invoiceDate,
     clientId: invoice.client.id,
@@ -67,12 +72,13 @@ function valuesFor(invoice: Invoice): InvoiceCreateFormValues {
         ? invoice.paymentMethod
         : "CASH",
     customerOrderReference: invoice.customerOrderReference ?? "",
-    vatRate: (invoice.lines[0]?.vatRate ?? 20).toFixed(2),
+    vatRate: rates.length === 1 ? rates[0] : LINE_VAT_RATE,
     lines: invoice.lines.map((line) => ({
       productId: line.productId,
       quantity: String(line.quantity),
       unitPriceExcludingTax: line.unitPriceExcludingTax.toFixed(2),
       discountRate: line.discountRate.toFixed(2),
+      vatRate: line.vatRate.toFixed(2),
     })),
   };
 }
@@ -101,6 +107,7 @@ export function InvoiceCreateForm({
   const [createdClient, setCreatedClient] = useState<Client | null>(null);
   const clientTrigger = useRef<HTMLButtonElement>(null);
   const [pendingRemoval, setPendingRemoval] = useState<number | null>(null);
+  const [lineToFocus, setLineToFocus] = useState<number | null>(null);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const submissionInFlight = useRef(false);
   const {
@@ -110,7 +117,7 @@ export function InvoiceCreateForm({
     reset,
     setError,
     setValue,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, submitCount },
   } = useForm<InvoiceCreateFormValues>({
     resolver: zodResolver(invoiceCreateSchema),
     defaultValues: invoice
@@ -166,7 +173,10 @@ export function InvoiceCreateForm({
   const selectedClient =
     clientDetails.data ??
     (createdClient?.id === clientId ? createdClient : selectedClientSummary);
-  const loadingOptions = clients.isPending || products.isPending;
+  const catalogueEmpty =
+    products.isSuccess && products.data.totalElements === 0;
+  const clientResultsEmpty =
+    clients.isSuccess && clients.data.totalElements === 0;
 
   const vatOptions = useMemo(() => {
     const current = (invoice?.lines[0]?.vatRate ?? 20).toFixed(2);
@@ -179,6 +189,12 @@ export function InvoiceCreateForm({
     if (invoice) reset(valuesFor(invoice));
   }, [invoice, reset]);
 
+  useEffect(() => {
+    if (lineToFocus === null) return;
+    document.getElementById(`invoice-product-${lineToFocus}`)?.focus();
+    setLineToFocus(null);
+  }, [lineToFocus]);
+
   const clientOptions = allClients;
 
   useEffect(() => {
@@ -190,13 +206,18 @@ export function InvoiceCreateForm({
   }, [clientSearch]);
 
   function appendLine() {
-    if (isSubmitting) return;
-    lineArray.append({
-      productId: "",
-      quantity: "1",
-      unitPriceExcludingTax: "",
-      discountRate: "0.00",
-    });
+    if (isSubmitting || catalogueEmpty) return;
+    lineArray.append(
+      {
+        productId: "",
+        quantity: "1",
+        unitPriceExcludingTax: "",
+        discountRate: "0.00",
+        vatRate: "0.00",
+      },
+      { shouldFocus: false },
+    );
+    setLineToFocus(lineArray.fields.length);
     setPendingRemoval(null);
   }
 
@@ -205,18 +226,7 @@ export function InvoiceCreateForm({
     if (event.key !== "Enter") return;
     if (index !== lineArray.fields.length - 1) return;
     event.preventDefault();
-    lineArray.append({
-      productId: "",
-      quantity: "1",
-      unitPriceExcludingTax: "",
-      discountRate: "0.00",
-    });
-    setPendingRemoval(null);
-    // Focus the new product combobox after React re-renders
-    setTimeout(() => {
-      const next = document.getElementById(`invoice-product-${index + 1}`);
-      next?.focus();
-    }, 50);
+    if (lines[index]?.productId) appendLine();
   }
 
   function handleDragStart(index: number, e: React.DragEvent) {
@@ -238,6 +248,7 @@ export function InvoiceCreateForm({
     productId: string,
     selected?: ProductSummary,
   ) {
+    if (lines[index]?.productId === productId) return;
     setValue(`lines.${index}.productId`, productId, {
       shouldDirty: true,
       shouldValidate: true,
@@ -251,6 +262,10 @@ export function InvoiceCreateForm({
         { shouldDirty: true, shouldValidate: true },
       );
       setValue(`lines.${index}.discountRate`, "0.00", {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+      setValue(`lines.${index}.vatRate`, money(product.defaultVatRate), {
         shouldDirty: true,
         shouldValidate: true,
       });
@@ -281,7 +296,7 @@ export function InvoiceCreateForm({
         quantity: Number(line.quantity),
         unitPriceExcludingTax: Number(line.unitPriceExcludingTax),
         discountRate: Number(line.discountRate),
-        vatRate: Number(values.vatRate),
+        vatRate: Number(effectiveVatRate(values.vatRate, line.vatRate)),
       })),
     };
 
@@ -372,13 +387,15 @@ export function InvoiceCreateForm({
               aria-labelledby="invoice-general-title"
             >
               <header className="editor-section-header">
-                <span className="editor-step">01</span>
+                <span className="editor-section-icon" aria-hidden="true">
+                  <Icon name="client" size={19} />
+                </span>
                 <div>
-                  <h2 id="invoice-general-title">Client et informations</h2>
+                  <h2 id="invoice-general-title">Client et paiement</h2>
                   <p>
                     {isQuotation
                       ? "Définissez le destinataire et les conditions de votre proposition."
-                      : "Définissez le destinataire et les conditions de facturation."}
+                      : "Choisissez le client à facturer, la date et le mode de paiement prévu."}
                   </p>
                 </div>
               </header>
@@ -433,6 +450,13 @@ export function InvoiceCreateForm({
                     Recherche des clients…
                   </p>
                 )}
+                {clientResultsEmpty && !clients.isFetching && (
+                  <p className="editor-field-hint" role="status">
+                    {clientQuery
+                      ? "Aucun client actif trouvé. Essayez un autre nom, code ou ICE."
+                      : "Aucun client actif. Utilisez Nouveau client pour ajouter le destinataire."}
+                  </p>
+                )}
                 {clients.data &&
                   clients.data.totalElements > clients.data.content.length && (
                     <p className="editor-field-hint">
@@ -459,14 +483,7 @@ export function InvoiceCreateForm({
                 )}
                 {selectedClient ? (
                   <ClientDetails client={selectedClient} />
-                ) : (
-                  <div className="invoice-client-placeholder">
-                    <Icon name="building" size={22} />
-                    <span>
-                      Les coordonnées du client sélectionné s’afficheront ici.
-                    </span>
-                  </div>
-                )}
+                ) : null}
               </div>
               <div className="invoice-basics">
                 <Field
@@ -537,7 +554,9 @@ export function InvoiceCreateForm({
               aria-labelledby="invoice-lines-title"
             >
               <header className="editor-section-header invoice-lines-heading">
-                <span className="editor-step">02</span>
+                <span className="editor-section-icon" aria-hidden="true">
+                  <Icon name="product" size={19} />
+                </span>
                 <div>
                   <h2 id="invoice-lines-title">
                     Produits et services{" "}
@@ -546,15 +565,17 @@ export function InvoiceCreateForm({
                     </span>
                   </h2>
                   <p>
-                    Choisissez vos articles et ajustez les quantités, prix et
-                    remises.
+                    Le prix du catalogue est prérempli. Indiquez la quantité et
+                    ajustez le prix hors taxe ou la remise si nécessaire.
                   </p>
                 </div>
                 <button
                   type="button"
                   className="secondary add-line"
                   data-testid="add-invoice-line"
-                  disabled={products.isPending || products.isError}
+                  disabled={
+                    products.isPending || products.isError || catalogueEmpty
+                  }
                   onClick={appendLine}
                 >
                   <Icon name="plus" size={16} />
@@ -563,23 +584,19 @@ export function InvoiceCreateForm({
               </header>
               {lineArray.fields.length === 0 ? (
                 <div className="invoice-lines-empty">
-                  <span className="invoice-empty-icon">
-                    <Icon name="product" size={26} />
-                  </span>
-                  <h3>Ajoutez votre premier article</h3>
-                  <p>
-                    Les prix du catalogue sont repris automatiquement et restent
-                    modifiables.
-                  </p>
-                  <button
-                    type="button"
-                    className="secondary"
-                    onClick={appendLine}
-                    disabled={products.isPending || products.isError}
-                  >
-                    <Icon name="plus" size={16} />
-                    Choisir un produit
-                  </button>
+                  <h3>
+                    {catalogueEmpty
+                      ? "Le catalogue est vide"
+                      : "Ajoutez votre premier article"}
+                  </h3>
+                  {catalogueEmpty && (
+                    <Link
+                      className="button-link secondary-link"
+                      to="/products/new"
+                    >
+                      Créer un produit ou service
+                    </Link>
+                  )}
                 </div>
               ) : (
                 <div className="invoice-create-lines-table">
@@ -624,6 +641,9 @@ export function InvoiceCreateForm({
                           register={register}
                           value={lines[index]}
                           preview={preview.lines[index]}
+                          vatRate={Number(
+                            effectiveVatRate(vatRate, lines[index]?.vatRate),
+                          )}
                           pendingRemoval={pendingRemoval === index}
                           disabled={isSubmitting}
                           onProduct={(id, product) =>
@@ -646,8 +666,7 @@ export function InvoiceCreateForm({
               )}
               {lineArray.fields.length > 0 && (
                 <p className="editor-field-hint">
-                  Montants en MAD · Entrée dans le dernier champ de remise
-                  ajoute une ligne.
+                  Le total HT de chaque ligne tient compte de la remise.
                 </p>
               )}
               {lineError && (
@@ -692,8 +711,7 @@ export function InvoiceCreateForm({
             aria-labelledby="invoice-summary-title"
           >
             <header className="editor-summary-header">
-              <span className="editor-kicker">Avant enregistrement</span>
-              <h2 id="invoice-summary-title">Récapitulatif</h2>
+              <h2 id="invoice-summary-title">Montants et TVA</h2>
               <span className="editor-summary-currency">MAD</span>
             </header>
             <div className="editor-summary-client">
@@ -739,6 +757,7 @@ export function InvoiceCreateForm({
                   }
                   {...register("vatRate")}
                 >
+                  <option value={LINE_VAT_RATE}>Taux par article</option>
                   {vatOptions.map((rate) => (
                     <option key={rate} value={rate}>
                       {Number(rate).toLocaleString("fr-FR")} %
@@ -747,7 +766,9 @@ export function InvoiceCreateForm({
                 </select>
               </Field>
               <p id="invoice-vat-hint">
-                Appliqué à toutes les lignes après remise.
+                {vatRate === LINE_VAT_RATE
+                  ? "Chaque article utilise son taux du catalogue ou celui enregistré dans le brouillon."
+                  : "Ce taux est appliqué à toutes les lignes après remise."}
               </p>
             </div>
             <dl className="editor-totals">
@@ -757,7 +778,7 @@ export function InvoiceCreateForm({
               </div>
             </dl>
             <div className="editor-grand-total">
-              <span>Total TTC estimé</span>
+              <span>Total toutes taxes comprises</span>
               <strong data-testid="invoice-preview-total">
                 {formatMoney(preview.totalIncludingTax)}
               </strong>
@@ -770,6 +791,16 @@ export function InvoiceCreateForm({
           </aside>
         </div>
         <footer className="editor-footer">
+          {submitCount > 0 && Object.keys(errors).length > 0 ? (
+            <p className="field-error invoice-submit-note" role="alert">
+              Corrigez les champs signalés pour enregistrer.
+            </p>
+          ) : !invoice && !isQuotation ? (
+            <p className="editor-footer-note invoice-submit-note">
+              Vous pourrez modifier le brouillon avant de le valider et de
+              générer le PDF.
+            </p>
+          ) : null}
           <div className="editor-footer-actions">
             <Link
               className="button-link secondary-link"
@@ -782,7 +813,7 @@ export function InvoiceCreateForm({
             <button
               data-testid="invoice-submit"
               type="submit"
-              disabled={isSubmitting || loadingOptions || submitDisabled}
+              disabled={isSubmitting || submitDisabled}
             >
               <Icon name="invoice" size={17} />
               {isSubmitting
@@ -860,6 +891,7 @@ function InvoiceCreateLine({
   register,
   value,
   preview,
+  vatRate,
   pendingRemoval,
   onProduct,
   onRequestRemoval,
@@ -878,6 +910,7 @@ function InvoiceCreateLine({
   register: ReturnType<typeof useForm<InvoiceCreateFormValues>>["register"];
   value?: InvoiceCreateFormValues["lines"][number];
   preview?: InvoiceCreateLinePreview;
+  vatRate: number;
   pendingRemoval: boolean;
   disabled: boolean;
   onProduct: (id: string, product?: ProductSummary) => void;
@@ -936,8 +969,14 @@ function InvoiceCreateLine({
         {selectedProduct && (
           <small className="invoice-create-product-meta">
             {selectedProduct.productCode} ·{" "}
-            {formatProductUnit(selectedProduct.unit)}
+            {formatProductUnit(selectedProduct.unit)} · TVA{" "}
+            {vatRate.toLocaleString("fr-FR")} %
           </small>
+        )}
+        {fieldErrors?.vatRate?.message && (
+          <p role="alert" className="field-error">
+            {fieldErrors.vatRate.message}
+          </p>
         )}
         {fieldErrors?.productId?.message && (
           <p
@@ -1037,7 +1076,11 @@ function InvoiceCreateLine({
         className="invoice-create-line-total"
         data-testid={`invoice-line-total-${index}`}
       >
-        <strong>{formatMoney(preview?.netAmountExcludingTax ?? 0)}</strong>
+        <strong>
+          {value?.productId && value.unitPriceExcludingTax && value.quantity
+            ? formatMoney(preview?.netAmountExcludingTax ?? 0)
+            : "—"}
+        </strong>
         {(preview?.discountAmount ?? 0) > 0 && (
           <small>− {formatMoney(preview?.discountAmount ?? 0)} de remise</small>
         )}

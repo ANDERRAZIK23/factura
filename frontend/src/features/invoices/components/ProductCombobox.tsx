@@ -119,7 +119,7 @@ export function ProductCombobox({
         autoComplete="off"
         disabled={disabled}
         value={open ? search : selectedLabel || search}
-        placeholder="Choisir un produit…"
+        placeholder="Nom ou code du produit…"
         onFocus={() => {
           if (selectedLabel) setSearch("");
           setActiveIndex(0);
@@ -137,7 +137,6 @@ export function ProductCombobox({
           setSearch(event.target.value);
           setOpen(true);
           setActiveIndex(0);
-          if (value) onChange("");
         }}
         onKeyDown={(event) => {
           if (event.key === "ArrowDown" || event.key === "ArrowUp") {

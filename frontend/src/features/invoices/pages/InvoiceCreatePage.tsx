@@ -19,7 +19,7 @@ export function InvoiceCreatePage() {
       <PageHeader
         eyebrow="Ventes"
         title="Créer une facture"
-        description="Renseignez le client, ajoutez vos articles et vérifiez les montants."
+        description="Préparez la facture, vérifiez le total, puis enregistrez-la en brouillon."
         breadcrumbs={[
           { label: "Factures", to: "/invoices" },
           { label: "Nouvelle facture" },

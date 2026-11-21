@@ -10,6 +10,15 @@ export interface InvoiceCreatePreview extends InvoiceCreateLinePreview {
   lines: InvoiceCreateLinePreview[];
 }
 
+export const LINE_VAT_RATE = "line";
+
+export function effectiveVatRate<T>(
+  commonRate: T | typeof LINE_VAT_RATE,
+  lineRate: T,
+) {
+  return commonRate === LINE_VAT_RATE ? lineRate : commonRate;
+}
+
 const money = (value: number) =>
   Math.round((value + Number.EPSILON) * 100) / 100;
 const emptyLine = (): InvoiceCreateLinePreview => ({
@@ -26,55 +35,69 @@ function calculateLine(
   discountRate: unknown,
   vatRate: unknown,
 ): InvoiceCreateLinePreview {
-  const [parsedQuantity, parsedPrice, parsedDiscount, parsedVat] = [
-    quantity,
-    price,
-    discountRate,
-    vatRate,
-  ].map(Number);
+  const parsedQuantity = scaledInteger(quantity, 3);
+  const parsedPrice = scaledInteger(price, 2);
+  const parsedDiscount = scaledInteger(
+    discountRate === "" ? "0" : discountRate,
+    2,
+  );
+  const parsedVat = scaledInteger(vatRate, 2);
   if (
-    ![parsedQuantity, parsedPrice, parsedDiscount, parsedVat].every(
-      Number.isFinite,
-    ) ||
-    parsedQuantity <= 0 ||
-    parsedPrice < 0 ||
-    parsedDiscount < 0 ||
-    parsedDiscount > 100 ||
-    parsedVat < 0
+    parsedQuantity === null ||
+    parsedQuantity <= 0n ||
+    parsedPrice === null ||
+    parsedPrice < 0n ||
+    parsedDiscount === null ||
+    parsedDiscount < 0n ||
+    parsedDiscount > 10_000n ||
+    parsedVat === null ||
+    parsedVat < 0n ||
+    parsedVat > 10_000n
   ) {
     return emptyLine();
   }
 
-  const grossAmountExcludingTax = money(parsedQuantity * parsedPrice);
-  const discountAmount = money(
-    (grossAmountExcludingTax * parsedDiscount) / 100,
-  );
-  const netAmountExcludingTax = money(grossAmountExcludingTax - discountAmount);
-  const vatAmount = money((netAmountExcludingTax * parsedVat) / 100);
+  // Match the server's half-up rounding at each monetary step.
+  const gross = (parsedQuantity * parsedPrice + 500n) / 1_000n;
+  const discount = (gross * parsedDiscount + 5_000n) / 10_000n;
+  const net = gross - discount;
+  const vat = (net * parsedVat + 5_000n) / 10_000n;
   return {
-    grossAmountExcludingTax,
-    discountAmount,
-    netAmountExcludingTax,
-    vatAmount,
-    totalIncludingTax: money(netAmountExcludingTax + vatAmount),
+    grossAmountExcludingTax: Number(gross) / 100,
+    discountAmount: Number(discount) / 100,
+    netAmountExcludingTax: Number(net) / 100,
+    vatAmount: Number(vat) / 100,
+    totalIncludingTax: Number(net + vat) / 100,
   };
+}
+
+function scaledInteger(value: unknown, decimals: number): bigint | null {
+  const text = String(value).trim();
+  if (!/^-?(?:\d+\.?\d*|\.\d+)$/.test(text)) return null;
+  const [whole, fraction = ""] = text.split(".");
+  if (fraction.length > decimals) return null;
+  return BigInt(whole + fraction.padEnd(decimals, "0"));
 }
 
 export function calculateInvoiceCreatePreview(
   lines: Array<{
+    productId?: string;
     quantity: unknown;
     unitPriceExcludingTax: unknown;
     discountRate: unknown;
+    vatRate?: unknown;
   }>,
   vatRate: unknown,
 ): InvoiceCreatePreview {
   const previews = lines.map((line) =>
-    calculateLine(
-      line.quantity,
-      line.unitPriceExcludingTax,
-      line.discountRate,
-      vatRate,
-    ),
+    line.productId === ""
+      ? emptyLine()
+      : calculateLine(
+          line.quantity,
+          line.unitPriceExcludingTax,
+          line.discountRate,
+          effectiveVatRate(vatRate, line.vatRate),
+        ),
   );
   return previews.reduce<InvoiceCreatePreview>(
     (total, line) => ({
