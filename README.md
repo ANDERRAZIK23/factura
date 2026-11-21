@@ -106,19 +106,9 @@ Run product and regression tests with the same backend, frontend, Playwright, an
 
 The frontend currently pins React Router 7.18.2. The active npm advisory affects React Router RSC action handling, while this application uses client-only `BrowserRouter` and no RSC/server actions. The audit database currently lists no secure React Router release; the older npm-suggested 7.11.0 version carries broader redirect, SSR, deserialization, and denial-of-service advisories, so it is intentionally not used.
 
-## Company contract designer
-
-Application administrators (`APP_ADMIN`) can open **Design des contrats** from the platform sidebar or **Design du contrat** from an enterprise profile. Each company has an independent template stored in PostgreSQL with an optimistic-lock version. Other roles cannot access the designer APIs.
-
-The editor supports headings, fonts, sizes, bold/italic/underline/strike, colors, highlighting, alignment, lists, tables, page breaks, company logos, and A4/Letter page settings. Export uses the current document, including unsaved edits. Company fields resolve to the selected enterprise's coordinates; client and contract fields remain marked for completion. Export does not create or sign a business contract.
-
-Endpoints are `GET` and `PUT /api/v1/companies/{companyId}/contract-design`, and `POST /api/v1/companies/{companyId}/contract-design/pdf`. The PDF endpoint does not persist changes. Documents are validated against a limited schema that rejects HTML, external resources, merged/nested tables, and excessive size. PDFs use standard Latin fonts and report unsupported characters explicitly.
-
-Migration `V10__add_company_contract_designs.sql` adds the template table without changing existing records. Frontend tests are in `ContractDesignerPage.test.tsx`; backend tests cover document validation, PDF rendering, permissions, independent company templates, stale versions, and concurrent first saves in `ContractDesignIT`.
-
 ## Legacy pricing compatibility
 
-Contract management is available as a company-scoped workspace with list, search, status and client filters, responsive details, creation, activation and cancellation. It uses the existing versioned contract APIs and preserves the DRAFT → ACTIVE → EXPIRED/CANCELLED lifecycle; viewers retain read-only access.
+The backend retains the company-scoped contract APIs for legacy pricing and invoice records.
 
 ## Invoice calculations and numbering (Phase 6)
 
@@ -196,7 +186,7 @@ The workshop provides a block list, properties panel, measurements in percentage
 
 `InvoiceDesignSettings.layout` is nullable for compatibility with existing flowing templates. When present, it stores up to 40 blocks with coordinates in thousandths of the full A4/Letter page from its top left. Geometry, colors, identifiers, unique required blocks and text lengths are validated at the API boundary. Saving also renders a sample to detect undersized blocks. Fixed content must fit its box; errors identify the box to enlarge. Article rows paginate within their box, with repeated headers and no split rows; a row taller than the available box requires increasing its height or width. Company, client, metadata, decorative blocks and footer repeat on each page, while totals and the amount in words appear on the final page. Intentional overlaps are permitted. A real invoice with longer content may require enlarging a box before validation.
 
-Settings are saved per company using version checks through `GET/PUT /api/v1/invoice-designs?companyId=…`; `POST /api/v1/invoice-designs/preview?companyId=…` previews unsaved settings. Company scope defaults to the authenticated user's company; company administrators cannot access another company's model. New validated invoices for all clients use that layout; previously generated PDFs remain preserved. Migration V11 promotes the latest client model per company (timestamp descending, client UUID ascending for ties), preserving its settings, version and audit fields. The original client records remain available for recovery and are no longer read by the application. The contract designer remains separate.
+Settings are saved per company using version checks through `GET/PUT /api/v1/invoice-designs?companyId=…`; `POST /api/v1/invoice-designs/preview?companyId=…` previews unsaved settings. Company scope defaults to the authenticated user's company; company administrators cannot access another company's model. New validated invoices for all clients use that layout; previously generated PDFs remain preserved. Migration V11 promotes the latest client model per company (timestamp descending, client UUID ascending for ties), preserving its settings, version and audit fields. The original client records remain available for recovery and are no longer read by the application.
 
 ## Devis, règlements, échéances, récurrences et portail client
 
