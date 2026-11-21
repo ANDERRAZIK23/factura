@@ -78,7 +78,7 @@ beforeEach(() => {
     value: revokeUrl,
   });
 });
-function setup(role: UserRole = "ADMIN") {
+function setup(role: UserRole = "ADMIN", path = "/invoice-designer") {
   const company = {
     id: "company-1",
     companyName: "Atlas SARL",
@@ -178,7 +178,7 @@ function setup(role: UserRole = "ADMIN") {
   });
   const view = render(
     <QueryClientProvider client={query}>
-      <MemoryRouter initialEntries={["/invoice-designer"]}>
+      <MemoryRouter initialEntries={[path]}>
         <App />
       </MemoryRouter>
     </QueryClientProvider>,
@@ -702,6 +702,51 @@ describe("invoice designer", () => {
     expect(saves[0]).toMatchObject({
       companyId: "company-2",
     });
+  });
+
+  it("opens, previews and saves the company selected by its direct link", async () => {
+    const { user, saves, previews } = setup(
+      "APP_ADMIN",
+      "/invoice-designer?companyId=company-2",
+    );
+    await waitForDesigner();
+    expect(
+      await screen.findByRole("heading", { name: "Beta SARL" }),
+    ).toBeVisible();
+    expect(screen.getByLabelText("Entreprise du modèle")).toHaveValue(
+      "company-2",
+    );
+    await user.type(screen.getByLabelText("Pied de page"), "Mentions de Beta");
+    await waitFor(() =>
+      expect(previews.at(-1)).toMatchObject({
+        companyId: "company-2",
+        settings: { footerText: "Mentions de Beta" },
+      }),
+    );
+    await user.click(
+      screen.getByRole("button", { name: "Appliquer à tous les clients" }),
+    );
+    await waitFor(() => expect(saves).toHaveLength(1));
+    expect(saves[0]).toMatchObject({
+      companyId: "company-2",
+      settings: { footerText: "Mentions de Beta" },
+    });
+  });
+
+  it("keeps company administrators in their own company when a link targets another", async () => {
+    const { user, saves } = setup(
+      "ADMIN",
+      "/invoice-designer?companyId=company-2",
+    );
+    await waitForDesigner();
+    expect(
+      screen.queryByLabelText("Entreprise du modèle"),
+    ).not.toBeInTheDocument();
+    await user.click(
+      screen.getByRole("button", { name: "Appliquer à tous les clients" }),
+    );
+    await waitFor(() => expect(saves).toHaveLength(1));
+    expect(saves[0].companyId).toBe("company-1");
   });
 
   it("shows a recoverable preview error", async () => {

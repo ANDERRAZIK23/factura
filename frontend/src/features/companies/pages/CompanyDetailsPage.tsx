@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -151,6 +151,12 @@ export function CompanyDetailsPage() {
               label={company.enabled ? "Active" : "Inactive"}
               tone={company.enabled ? "success" : "danger"}
             />
+            <Link
+              className="button-link secondary-link"
+              to={`/invoice-designer?companyId=${company.id}`}
+            >
+              Personnaliser les factures
+            </Link>
             {!isCurrentCompany && company.enabled && (
               <button
                 type="button"

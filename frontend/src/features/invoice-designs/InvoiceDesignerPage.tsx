@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../../auth/useAuth";
 import { PageHeader } from "../../components/ui/PageHeader";
 import { Icon } from "../../components/ui/Icon";
@@ -27,7 +27,19 @@ export function InvoiceDesignerPage() {
   const { user } = useAuth();
   const platform = user?.role === "APP_ADMIN";
   const current = useCurrentCompany();
-  const [companyId, setCompanyId] = useState(user?.companyId ?? "");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const companyId = platform
+    ? (searchParams.get("companyId") ?? user?.companyId ?? "")
+    : (user?.companyId ?? "");
+  function setCompanyId(next: string) {
+    setSearchParams(
+      (params) => {
+        params.set("companyId", next);
+        return params;
+      },
+      { replace: true },
+    );
+  }
   const [pendingCompany, setPendingCompany] = useState<string | null>(null);
   const [dirty, setDirty] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -265,7 +277,9 @@ function InvoiceDesignEditor({
   }, [canSave]);
   useEffect(() => {
     // Query notifications may arrive after save state; never restore older props over that save.
-    const newer = initial.version !== null && (saved.version === null || initial.version > saved.version);
+    const newer =
+      initial.version !== null &&
+      (saved.version === null || initial.version > saved.version);
     if (!dirty && !busy && newer) {
       setSaved(initial);
       setSettings(initial.settings);
